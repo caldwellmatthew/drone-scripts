@@ -94,29 +94,30 @@ if __name__ == '__main__':
 			    yOff=0
 			    for entry in logger:
 				if first:
-				    xOff=data["stateEstimate.x"]
-				    yOff=data["stateEstimate.y"]
-				    timestamp = entry[0]
-				    data = entry[1]
-				    logconf_name = entry[2]
-				    #print('[%d][%s]: %s' % (timestamp, logconf_name, data))
-				    point_x = data["stateEstimate.x"]-xOff
-				    point_y = data["stateEstimate.y"]-yOff
-				    ###Old Option
-				    #if (point_x > 0.6 or point_x < -0.3): # x out of bounds
-				    #	print("x out of bounds")
-				    #	failed = True
-				    #if (point_y > 0.5 or point_y < -0.6): # y out of bounds
-				    #	print("y out of bounds")
-				    #	failed = True
-				    #if (point_x > 0.4 and point_y < -0.2): # bottom right
-				    #	print("bottom right")
-				    #	failed = True
-				    #if (point_x < -0.1 and point_y > 0.2): # top left
-				    #	print("top left")
-				    #	failed = True
-				    ###New Option
-				    #(x-0)^2 + (y-.255)^2<Radius^2
+				    	xOff=data["stateEstimate.x"]
+				    	yOff=data["stateEstimate.y"]
+					writer.writerow([yOff,xOff])
+			    	timestamp = entry[0]
+			    	data = entry[1]
+			    	logconf_name = entry[2]
+			    	#print('[%d][%s]: %s' % (timestamp, logconf_name, data))
+			    	point_x = data["stateEstimate.x"]-xOff
+			    	point_y = data["stateEstimate.y"]-yOff
+			    ###Old Option
+			    #if (point_x > 0.6 or point_x < -0.3): # x out of bounds
+			    #	print("x out of bounds")
+			    #	failed = True
+			    #if (point_y > 0.5 or point_y < -0.6): # y out of bounds
+			    #	print("y out of bounds")
+			    #	failed = True
+			    #if (point_x > 0.4 and point_y < -0.2): # bottom right
+			    #	print("bottom right")
+			    #	failed = True
+			    #if (point_x < -0.1 and point_y > 0.2): # top left
+			    #	print("top left")
+			    #	failed = True
+			    ###New Option
+			    #(x-0)^2 + (y-.255)^2<Radius^2
 				if point_x**2 + (point_y+.255)**2>maskRadius**2 && point_x**2 + (point_y-.255)**2>maskRadius**2:
 				    failed=true
 				    print("Out of Bounds")
