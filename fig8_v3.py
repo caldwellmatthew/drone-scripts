@@ -124,14 +124,14 @@ if __name__ == '__main__':
 				writer.writerow([timestamp, point_x, point_y])
 			if failed:
 				print('Test failed: drone flight veered outside of defined mask.')
-			with open(PATH2, mode='w') as file:
-				writer = csv.writer(file, delimiter=',')
-			   	writer.writerow(['Test',timeStamp,'FAILED'])
+				with open(PATH2, mode='w') as file:
+					writer = csv.writer(file, delimiter=',')
+			   		writer.writerow(['Test',timeStamp,'FAILED'])
 			else:
 				print('Test passed: drone flight remained within defined mask.')
-			with open(PATH2, mode='w') as file:
-				writer = csv.writer(file, delimiter=',')
-				writer.writerow(['Test',timeStamp,'PASSED'])
+				with open(PATH2, mode='w') as file:
+					writer = csv.writer(file, delimiter=',')
+					writer.writerow(['Test',timeStamp,'PASSED'])
 
 			flight = read_csv(PATH, header=0, names = ['time', 'x', 'y'])
 			relplot(x='x', y='y', data=flight)
