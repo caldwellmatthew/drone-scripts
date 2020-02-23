@@ -4,13 +4,16 @@ import xlsxwriter
 import os
 import glob
 import pandas as pd
-PATH="/home/bitcraze/Documents/Drone Flight/PID Untuned/"
+PATH="/home/bitcraze/Downloads/2-5-2020 Drone 1 Evening Test Flights/"
 os.chdir(PATH)
 writer=pd.ExcelWriter('CombinedDroneData.xlsx',engine='xlsxwriter')
 extension = 'csv'
 #All Files in folder
 filenames = [i for i in glob.glob('*.{}'.format(extension))]
-filenames.remove("checklist.csv")
+try:
+    filenames.remove("checklist.csv")
+except ValueError:
+    print("No checklist file, are these tests from the latest version of the script")
 dataPage=pd.DataFrame()
 dataPage.to_excel(writer, sheet_name="Data Summary")
 workbook  = writer.book
