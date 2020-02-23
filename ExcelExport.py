@@ -18,7 +18,8 @@ dataPage=pd.DataFrame()
 dataPage.to_excel(writer, sheet_name="Data Summary")
 workbook  = writer.book
 worksheet = writer.sheets['Data Summary']
-
+chartsheet=workbook.add_chartsheet()
+chartsheet2=workbook.add_chartsheet()
 ###Average Chart
 chart = workbook.add_chart({'type': 'scatter'})
 chart.set_x_axis({
@@ -53,7 +54,9 @@ allChart.set_y_axis({
     'max':.6
 })
 allChart.set_title({'name':'All Runs'})
-worksheet.insert_chart("D20",allChart)
+#worksheet.insert_chart("D20",allChart)
+chartsheet.set_chart(allChart)
+chartsheet.activate()
 ###
 ###Perfect Data
 worksheet.write('L1',"Perfect X")
@@ -78,26 +81,36 @@ pChart.set_y_axis({
     'max':.6
 })
 pChart.set_title({'name':'Perfect Run'})
-worksheet.insert_chart("N2",pChart)
+worksheet.insert_chart("D20",pChart)
 pChart.add_series({'values':["Data Summary",1,12,406,12], 'categories':["Data Summary",1,11,406,11]})
 ###
 
 ###Dif between avg and perfect
 worksheet.write('V1',"Dif avg and per X")
 worksheet.write('W1',"Dif avg and per Y")
-for row in range(1,403):
+worksheet.write('X1',"Dif avg and per Dist")
+for row in range(1,402):
     worksheet.write_formula(row,21,'=ABS(A%d-L%d)'%(row+1,row+1))
     worksheet.write_formula(row,22,'=ABS(B%d-M%d)'%(row+1,row+1))
 dChart = workbook.add_chart({'type': 'column'})
 
 dChart.set_title({'name':'Difference Run X'})
-worksheet.insert_chart("Y2",dChart)
-dChart.add_series({'values':["Data Summary",1,21,406,21]})
+worksheet.insert_chart("N2",dChart)
+dChart.add_series({'values':["Data Summary",1,21,402,21]})
 
 d2Chart = workbook.add_chart({'type': 'column'})
 d2Chart.set_title({'name':'Difference Run Y'})
-worksheet.insert_chart("Y20",d2Chart)
-d2Chart.add_series({'values':["Data Summary",1,22,406,22]})
+worksheet.insert_chart("N20",d2Chart)
+d2Chart.add_series({'values':["Data Summary",1,22,402,22]})
+
+for row in range(1,402):
+    worksheet.write_formula(row,23,'=SQRT(POWER(V%d,2) + POWER(W%d,2))'%(row+1,row+1))
+    
+d3Chart = workbook.add_chart({'type': 'column'})
+
+d3Chart.set_title({'name':'Difference Run Combination'})
+worksheet.insert_chart("N40",d3Chart)
+d3Chart.add_series({'values':["Data Summary",1,23,406,23]})
 
 ###FirstTen
 tChart = workbook.add_chart({'type': 'scatter'})
@@ -112,7 +125,9 @@ tChart.set_y_axis({
     'min':-.6,
     'max':.6
     })
-worksheet.insert_chart("N20",tChart)
+#worksheet.insert_chart("N20",tChart)
+chartsheet2.set_chart(tChart)
+chartsheet2.activate()
 firstTen=True
 index=0
 
@@ -124,7 +139,7 @@ for f in filenames:
         averageDataX=pd.concat([averageDataX,df[['X']]],axis=1)
         averageDataY=pd.concat([averageDataY,df[['Y']]],axis=1)
         sheetName=os.path.basename(f)[:31]        
-        allChart.add_series({'values' : [sheetName,2,3,404,3], 'categories':[sheetName,2,2,404,2],'name':sheetName})
+        allChart.add_series({'values' : [sheetName,1,3,404,3], 'categories':[sheetName,1,2,404,2],'name':sheetName})
         df.to_excel(writer, sheet_name=sheetName)
         ##TempChart
         tempSheet=writer.sheets[sheetName]
@@ -141,26 +156,84 @@ for f in filenames:
         })
         tempChart.set_title({'name':'Current Run'})
         tempSheet.insert_chart("F2",tempChart)
-        tempChart.add_series({'values' : [sheetName,2,3,404,3], 'categories':[sheetName,2,2,404,2],'name':sheetName})
+        tempChart.add_series({'values' : [sheetName,1,3,404,3], 'categories':[sheetName,1,2,404,2],'name':sheetName})
         ###FirstTen
         index=index+1
         if(index<11):
-            tChart.add_series({'values' : [sheetName,2,3,404,3], 'categories':[sheetName,2,2,404,2], 'name':sheetName})
+            tChart.add_series({'values' : [sheetName,1,3,404,3], 'categories':[sheetName,1,2,404,2], 'name':sheetName})
+        ###
+        ### Error
+        tempSheet.write('N1',"Perfect X")
+        tempSheet.write('O1',"Perfect Y")
+        tempSheet.write('N2',0)
+        tempSheet.write('O2',0)
+        for row in range(2,201):
+            tempSheet.write_formula(row,13,'=N%d+(0.8*0.01*COS((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
+            tempSheet.write_formula(row,14,'=O%d+(-0.8*0.01*SIN((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
+        for row in range(201,402):
+            tempSheet.write_formula(row,13,'=N%d+(-0.8*0.01*COS((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
+            tempSheet.write_formula(row,14,'=O%d+(0.8*0.01*SIN((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
+        tpChart = workbook.add_chart({'type': 'scatter'})
+        tpChart.set_x_axis({
+            'name': 'X-Coordinate',
+            'min':-.6,
+            'max':.6
+        })
+        tpChart.set_y_axis({
+            'name': 'Y-Coordinate',
+            'min':-.6,
+            'max':.6
+        })
+        tpChart.set_title({'name':'Perfect Run'})
+        tempSheet.insert_chart("F20",tpChart)
+        tpChart.add_series({'values':[sheetName,1,14,406,14], 'categories':[sheetName,1,13,406,13]})
+
+
+        tempSheet.write('Q1',"Dif from per X")
+        tempSheet.write('R1',"Dif from per Y")
+        tempSheet.write('S1',"Dif from per Dist")
+        for row in range(1,402):
+            tempSheet.write_formula(row,16,'=ABS(C%d-N%d)'%(row+1,row+1))
+            tempSheet.write_formula(row,17,'=ABS(D%d-O%d)'%(row+1,row+1))
+        tdChart = workbook.add_chart({'type': 'column'})
+
+        tdChart.set_title({'name':'Difference Run X'})
+        tempSheet.insert_chart("U2",tdChart)
+        tdChart.add_series({'values':[sheetName,1,16,402,16]})
+
+        td2Chart = workbook.add_chart({'type': 'column'})
+        td2Chart.set_title({'name':'Difference Run Y'})
+        tempSheet.insert_chart("U20",td2Chart)
+        td2Chart.add_series({'values':[sheetName,1,17,402,17]})
+
+        for row in range(1,402):
+            tempSheet.write_formula(row,18,'=SQRT(POWER(Q%d,2) + POWER(R%d,2))'%(row+1,row+1))
             
+        td3Chart = workbook.add_chart({'type': 'column'})
+
+        td3Chart.set_title({'name':'Difference Run Combination'})
+        tempSheet.insert_chart("U40",td3Chart)
+        td3Chart.add_series({'values':[sheetName,1,18,402,18]})
+
+        
+
+
+
+        
         
 ###Data Table
-worksheet.write('D35',"Average Dif in X")
-worksheet.write('E35',"Average Dif in Y")
-worksheet.write('F35',"Max Dif in X")
-worksheet.write('G35',"Max Dif in Y")
-worksheet.write('H35',"Min Dif in X")
-worksheet.write('I35',"Min Dif in Y")
-worksheet.write_formula('D36',"=AVERAGE(V2:V402)")
-worksheet.write_formula('E36',"=AVERAGE(W2:W402)")
-worksheet.write_formula('F36',"=MAX(V2:V402)")
-worksheet.write_formula('G36',"=MAX(W2:W402)")
-worksheet.write_formula('H36',"=MIN(V2:V402)")
-worksheet.write_formula('I36',"=MIN(W2:W402)")
+worksheet.write('AA0',"Average Dif in X")
+worksheet.write('AA1',"Average Dif in Y")
+worksheet.write('AA2',"Max Dif in X")
+worksheet.write('AA3',"Max Dif in Y")
+worksheet.write('AA4',"Min Dif in X")
+worksheet.write('AA5',"Min Dif in Y")
+worksheet.write_formula('AB0',"=AVERAGE(V2:V402)")
+worksheet.write_formula('AB1',"=AVERAGE(W2:W402)")
+worksheet.write_formula('AB2',"=MAX(V2:V402)")
+worksheet.write_formula('AB3',"=MAX(W2:W402)")
+worksheet.write_formula('AB4',"=MIN(V2:V402)")
+worksheet.write_formula('AB5',"=MIN(W2:W402)")
 
 
 
