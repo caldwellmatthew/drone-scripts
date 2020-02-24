@@ -67,8 +67,8 @@ for row in range(2,201):
     worksheet.write_formula(row,11,'=L%d+(0.8*0.01*COS((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
     worksheet.write_formula(row,12,'=M%d+(-0.8*0.01*SIN((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
 for row in range(201,402):
-    worksheet.write_formula(row,11,'=L%d+(-0.8*0.01*COS((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
-    worksheet.write_formula(row,12,'=M%d+(0.8*0.01*SIN((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
+    worksheet.write_formula(row,11,'=L%d+(0.8*0.01*COS((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
+    worksheet.write_formula(row,12,'=M%d+(0.8*0.01*SIN((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
 pChart = workbook.add_chart({'type': 'scatter'})
 pChart.set_x_axis({
     'name': 'X-Coordinate',
@@ -171,8 +171,8 @@ for f in filenames:
             tempSheet.write_formula(row,13,'=N%d+(0.8*0.01*COS((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
             tempSheet.write_formula(row,14,'=O%d+(-0.8*0.01*SIN((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
         for row in range(201,402):
-            tempSheet.write_formula(row,13,'=N%d+(-0.8*0.01*COS((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
-            tempSheet.write_formula(row,14,'=O%d+(0.8*0.01*SIN((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
+            tempSheet.write_formula(row,13,'=N%d+(0.8*0.01*COS((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
+            tempSheet.write_formula(row,14,'=O%d+(0.8*0.01*SIN((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
         tpChart = workbook.add_chart({'type': 'scatter'})
         tpChart.set_x_axis({
             'name': 'X-Coordinate',
