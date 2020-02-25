@@ -4,7 +4,7 @@ import xlsxwriter
 import os
 import glob
 import pandas as pd
-PATH="/home/bitcraze/Downloads/2-5-2020 Drone 1 Evening Test Flights/"
+PATH="/home/bitcraze/Documents/Drone 1 Flight 2/Untuned PID/"
 os.chdir(PATH)
 writer=pd.ExcelWriter('CombinedDroneData.xlsx',engine='xlsxwriter')
 extension = 'csv'
@@ -67,7 +67,7 @@ for row in range(2,201):
     worksheet.write_formula(row,11,'=L%d+(0.8*0.01*COS((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
     worksheet.write_formula(row,12,'=M%d+(-0.8*0.01*SIN((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
 for row in range(201,402):
-    worksheet.write_formula(row,11,'=L%d+(0.8*0.01*COS((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
+    worksheet.write_formula(row,11,'=L%d+(-0.8*0.01*COS((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
     worksheet.write_formula(row,12,'=M%d+(0.8*0.01*SIN((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
 pChart = workbook.add_chart({'type': 'scatter'})
 pChart.set_x_axis({
@@ -131,8 +131,13 @@ chartsheet2.activate()
 firstTen=True
 index=0
 
-###
+###Mask Passed
+tpmChart = workbook.add_chart({'type': 'column'})
+tpmChart.set_title({'name':'Points Failed'})
+tpmChart.set_legend({'position':'none'})
+worksheet.insert_chart('AD2',tpmChart)
 
+###
 for f in filenames:
         print(f)
         df = pd.read_csv(f)
@@ -162,6 +167,11 @@ for f in filenames:
         if(index<11):
             tChart.add_series({'values' : [sheetName,1,3,404,3], 'categories':[sheetName,1,2,404,2], 'name':sheetName})
         ###
+        ###PASSED MASK
+        tempSheet.write_formula('F405','=COUNTIF(E:E,TRUE)>0')
+        tempSheet.write_formula('F406','=COUNTIF(E:E,TRUE)')
+        tempSheet.write('E405','Failed Mask')
+        tpmChart.add_series({'values' : [sheetName,405,5,405,5],'name':sheetName,'data_labels':{'series_names':True,'value':True},'overlap':-50, 'gap':300})
         ### Error
         tempSheet.write('N1',"Perfect X")
         tempSheet.write('O1',"Perfect Y")
@@ -222,20 +232,20 @@ for f in filenames:
         
         
 ###Data Table
-worksheet.write('AA0',"Average Dif in X")
-worksheet.write('AA1',"Average Dif in Y")
-worksheet.write('AA2',"Max Dif in X")
-worksheet.write('AA3',"Max Dif in Y")
-worksheet.write('AA4',"Min Dif in X")
-worksheet.write('AA5',"Min Dif in Y")
-worksheet.write_formula('AB0',"=AVERAGE(V2:V402)")
-worksheet.write_formula('AB1',"=AVERAGE(W2:W402)")
-worksheet.write_formula('AB2',"=MAX(V2:V402)")
-worksheet.write_formula('AB3',"=MAX(W2:W402)")
-worksheet.write_formula('AB4',"=MIN(V2:V402)")
-worksheet.write_formula('AB5',"=MIN(W2:W402)")
+worksheet.write('AA1',"Average Dif in X")
+worksheet.write('AA2',"Average Dif in Y")
+worksheet.write('AA3',"Max Dif in X")
+worksheet.write('AA4',"Max Dif in Y")
+worksheet.write('AA5',"Min Dif in X")
+worksheet.write('AA6',"Min Dif in Y")
+worksheet.write_formula('AB1',"=AVERAGE(V2:V402)")
+worksheet.write_formula('AB2',"=AVERAGE(W2:W402)")
+worksheet.write_formula('AB3',"=MAX(V2:V402)")
+worksheet.write_formula('AB4',"=MAX(W2:W402)")
+worksheet.write_formula('AB5',"=MIN(V3:V402)")
+worksheet.write_formula('AB6',"=MIN(W3:W402)")
 
-
+###
 
 ###
 worksheet.write_column('A2', averageDataX.mean(axis=1,skipna=True,numeric_only=True))
