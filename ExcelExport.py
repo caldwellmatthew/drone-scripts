@@ -67,7 +67,7 @@ for row in range(2,201):
     worksheet.write_formula(row,11,'=L%d+(0.8*0.01*COS((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
     worksheet.write_formula(row,12,'=M%d+(-0.8*0.01*SIN((180*((ROW()-1)*0.01))*(PI()/180)))'%(row))
 for row in range(201,402):
-    worksheet.write_formula(row,11,'=L%d+(-0.8*0.01*COS((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
+    worksheet.write_formula(row,11,'=L%d+(0.8*0.01*COS((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
     worksheet.write_formula(row,12,'=M%d+(0.8*0.01*SIN((180*((ROW()-201)*0.01))*(PI()/180)))'%(row))
 pChart = workbook.add_chart({'type': 'scatter'})
 pChart.set_x_axis({
@@ -224,7 +224,8 @@ for f in filenames:
         td3Chart.set_title({'name':'Difference Run Combination'})
         tempSheet.insert_chart("U40",td3Chart)
         td3Chart.add_series({'values':[sheetName,1,18,402,18]})
-
+        ###
+        
         
 
 
@@ -246,6 +247,16 @@ worksheet.write_formula('AB5',"=MIN(V3:V402)")
 worksheet.write_formula('AB6',"=MIN(W3:W402)")
 
 ###
+VChart = workbook.add_chart({'type': 'column', 'subtype':'stacked'})
+VChart.set_title({'name':'Variance'})
+worksheet.insert_chart("D38",VChart)
+worksheet.write('AM1',"Variance X")
+worksheet.write('AN1',"Variance Y")
+worksheet.write_column('AM2', averageDataX.max(axis=1,skipna=True,numeric_only=True)-averageDataX.min(axis=1,skipna=True,numeric_only=True))
+worksheet.write_column('AN2', averageDataY.max(axis=1,skipna=True,numeric_only=True)-averageDataY.min(axis=1,skipna=True,numeric_only=True))
+VChart.add_series({'values':["Data Summary",1,38,403,38], 'name': 'X Variance'})
+VChart.add_series({'values':["Data Summary",1,39,403,39], 'name': 'Y Variance'})
+
 
 ###
 worksheet.write_column('A2', averageDataX.mean(axis=1,skipna=True,numeric_only=True))
