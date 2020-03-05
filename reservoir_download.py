@@ -71,60 +71,90 @@ class ReservoirDownloadExample:
         print('Connected to %s' % link_uri)
 
         # The definition of the logconfig can be made before connecting
-        self._lg_stab = LogConfig(name='Stabilizer', period_in_ms=100)
-        self._lg_stab.add_variable('reservoir.checksum', 'uint32_t')
-        self._lg_stab.add_variable('reservoir.data', 'uint32_t')
-        self._lg_stab.add_variable('reservoir.index', 'uint32_t')
-        self._lg_stab.add_variable('reservoir.size0', 'uint8_t')
-        self._lg_stab.add_variable('reservoir.conn0', 'uint16_t')
+        self._lg_res = LogConfig(name='Reservoir', period_in_ms=100)
+        self._lg_res.add_variable('reservoir.checksum', 'uint32_t')
+        self._lg_res.add_variable('reservoir.data', 'uint32_t')
+        self._lg_res.add_variable('reservoir.index', 'uint32_t')
+        self._lg_res.add_variable('reservoir.size0', 'uint8_t')
+        self._lg_res.add_variable('reservoir.conn0', 'uint16_t')
 
         # Adding the configuration cannot be done until a Crazyflie is
         # connected, since we need to check that the variables we
         # would like to log are in the TOC.
         try:
-            self._cf.log.add_config(self._lg_stab)
+            self._cf.log.add_config(self._lg_res)
             # This callback will receive the data
-            self._lg_stab.data_received_cb.add_callback(self._stab_log_data)
+            self._lg_res.data_received_cb.add_callback(self._res_log_data)
             # This callback will be called on errors
-            self._lg_stab.error_cb.add_callback(self._stab_log_error)
+            self._lg_res.error_cb.add_callback(self._res_log_error)
 
             self._cf.reservoir.clear()
 
+            print('Allocating reservoir with 50 neurons, '
+                  '250 internal connections.')
             self._cf.reservoir.alloc_reservoir(0, 50, 250)
+
+            print('Setting input weights\t\t', end='')
             for i in range(0, 50):
                 for j in range(0, 3):
                     self._cf.reservoir.set_input_weight_bytes(
                         0, j, i, (i * j + 63))
                     self.checksum = 0xFFFFFFFF & (
                         (self.checksum ^ (i * j + 63)) + (i * j + 63))
-            print("Computed checksum: " + str(self.checksum))
+                print('.', end='')
+            print('')
+
+            print('Setting output weights\t\t', end='')
+            for i in range(0, 50):
+                for j in range(0, 4):
+                    self._cf.reservoir.set_output_weight_bytes(
+                        0, j, i, (i * j + 17))
+                    self.checksum = 0xFFFFFFFF & (
+                        (self.checksum ^ (i * j + 17)) + (i * j + 17))
+                print('.', end='')
+            print('')
+
+            print('Setting internal weights\t', end='')
+            for i in range(0, 250):
+                self._cf.reservoir.append_internal_weight_bytes(
+                    0, i, 7, 3, i)
+                self.checksum = 0xFFFFFFFF & (
+                    (self.checksum ^ (i)) + (i))
+                self.checksum = 0xFFFFFFFF & (
+                    (self.checksum ^ (3)) + (3))
+                self.checksum = 0xFFFFFFFF & (
+                    (self.checksum ^ (7)) + (7))
+                print('.', end='')
+            print('')
+
+            print('Computed checksum: ' + str(self.checksum))
             time.sleep(0.2)
             self._cf.reservoir.compute_checksum()
 
             # Start the logging
-            self._lg_stab.start()
+            self._lg_res.start()
         except KeyError as e:
             print('Could not start log configuration,'
                   '{} not found in TOC'.format(str(e)))
         except AttributeError:
-            print('Could not add Stabilizer log config, bad configuration.')
+            print('Could not add reservoir log config, bad configuration.')
 
         time.sleep(1)
         # Start a timer to disconnect in 10s
         t = Timer(0.2, self._cf.close_link)
         t.start()
 
-    def _stab_log_error(self, logconf, msg):
+    def _res_log_error(self, logconf, msg):
         """Callback from the log API when an error occurs"""
         print('Error when logging %s: %s' % (logconf.name, msg))
 
-    def _stab_log_data(self, timestamp, data, logconf):
+    def _res_log_data(self, timestamp, data, logconf):
         """Callback froma the log API when data arrives"""
         print('[%d][%s]: %s' % (timestamp, logconf.name, data))
         if (data['reservoir.checksum'] != self.checksum):
-            print('Test failed! Checksum mismatch.')
+            print('\033[91m' + 'Test failed! Checksum mismatch.' + '\x1b[0m')
         else:
-            print('Test passed! Checksums match.')
+            print('\033[92m' + 'Test passed! Checksums match.' + '\x1b[0m')
 
     def _connection_failed(self, link_uri, msg):
         """Callback when connection initial connection fails (i.e no Crazyflie
@@ -156,7 +186,7 @@ if __name__ == '__main__':
     if len(available) > 0:
         le = ReservoirDownloadExample(available[0][0])
     else:
-        print('No Crazyflies found, cannot run example')
+        print('No Crazyflies found. Cannot run.')
 
     # The Crazyflie lib doesn't contain anything to keep the application alive,
     # so this is where your application should do something. In our case we
